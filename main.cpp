@@ -1,7 +1,7 @@
 #include <iostream>
 #include "CFG.h"
 int main() {
-    CFG cfg;
+    CFG cfg("input.json");
     cfg.print();
     return 0;
 }

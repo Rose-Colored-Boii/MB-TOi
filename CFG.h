@@ -7,7 +7,10 @@
 #include "vector"
 #include "iostream"
 #include "map"
+#include "json.hpp"
+#include "fstream"
 using namespace std;
+using json = nlohmann::json;
 
 
 class CFG {
@@ -17,7 +20,7 @@ private:
     map<string, vector<string>> productions;
     string startingVariable;
 public:
-    CFG();
+    CFG(const string& filename);
     void print() const;
 
 };

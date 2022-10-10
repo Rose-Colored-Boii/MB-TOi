@@ -29,10 +29,34 @@ void CFG::print() const {
     cout << "S = " << startingVariable;
 }
 
-CFG::CFG() {
-    variables = {"BINDIGIT", "S"};
-    terminals = {"0", "1", "a", "b"};
-    productions["BINDIGIT"] = {"0", "1"};
-    productions["S"] = {"", "a S b BINDIGIT"};
-    startingVariable = "S";
+CFG::CFG(const string &filename) {
+    ifstream input(filename);
+    json j;
+    input >> j;
+
+    for (const auto& i : j["Variables"]){
+        variables.push_back(i);
+    }
+
+    for (const auto& i : j["Terminals"]){
+        terminals.push_back(i);
+    }
+
+    for (const auto& i : j["Productions"]){
+        if (i["body"].empty()){
+            productions[i["head"]].push_back("");
+        }
+        else{
+            string s;
+            for (const auto& m : i["body"]){
+                s += m;
+                if (m != i["body"].back()){
+                    s += " ";
+                }
+            }
+            productions[i["head"]].push_back(s);
+        }
+    }
+
+    startingVariable = j["Start"];
 }
