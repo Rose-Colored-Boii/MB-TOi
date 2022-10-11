@@ -59,4 +59,10 @@ CFG::CFG(const string &filename) {
     }
 
     startingVariable = j["Start"];
+
+    std::sort(variables.begin(), variables.end());
+    std::sort(terminals.begin(), terminals.end());
+    for (auto& i : productions){
+        std::sort(i.second.begin(), i.second.end());
+    }
 }

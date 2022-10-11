@@ -9,6 +9,7 @@
 #include "map"
 #include "json.hpp"
 #include "fstream"
+#include "algorithm"
 using namespace std;
 using json = nlohmann::json;
 
