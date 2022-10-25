@@ -5,6 +5,7 @@
 #ifndef CFG_CFG_H
 #define CFG_CFG_H
 #include "vector"
+#include "set"
 #include "iostream"
 #include "map"
 #include "json.hpp"
@@ -20,10 +21,12 @@ private:
     vector<string> terminals;
     map<string, vector<string>> productions;
     string startingVariable;
+    void elimNull();
 public:
     CFG(const string& filename);
     void print() const;
-
+    void toCNF();
+    bool accepts(const string& input);
 };
 
 

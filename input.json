@@ -1,10 +1,15 @@
 {
-  "Variables": ["S","BINDIGIT"],
-  "Terminals": ["a", "b","0", "1"],
+  "Variables": ["A", "B", "C", "S"],
+  "Terminals": ["a", "b"],
   "Productions": [
-    {"head": "S", "body": ["a", "S", "b","BINDIGIT"]}, {"head": "S", "body": []},
-    {"head": "BINDIGIT", "body": ["0"]},
-    {"head": "BINDIGIT", "body": ["1"]}
+    {"head": "A", "body": ["B", "A"]},
+    {"head": "A", "body": ["a"]},
+    {"head": "B", "body": ["C", "C"]},
+    {"head": "B", "body": ["b"]},
+    {"head": "C", "body": ["A", "B"]},
+    {"head": "C", "body": ["a"]},
+    {"head": "S", "body": ["A", "B"]},
+    {"head": "S", "body": ["B", "C"]}
   ],
   "Start": "S"
 }
