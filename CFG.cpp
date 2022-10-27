@@ -120,6 +120,7 @@ void CFG::toCNF() {
 bool CFG::accepts(const string& input) {
     vector<vector<set<string>>> allIter;
     vector<set<string>> firstIter(input.size());
+    //Create first row
     for (int i = 0; i < input.size(); i++){
         for (const auto& j : productions){
             for (const auto& k : j.second){
@@ -131,21 +132,28 @@ bool CFG::accepts(const string& input) {
             }
         }
     }
+    //Push first row into pyramid
     allIter.push_back(firstIter);
     int n = input.size() - 1;
+    //Create the rest of the rows
     while (n > 0){
         vector<set<string>> nextIter;
         for (int i = 0; i < n; i++){
             set<string> newEntry;
-            if (allIter.size() == 1){
-                set<string> vec1 = allIter[0][i];
-                set<string> vec2 = allIter[0][i+1];
-                for (auto s : vec1){
-                    for (auto s2 : vec2){
+            for (int p = 0; p < allIter.size(); p++){
+                //Vec1 = tuple on row
+                //Vec2 = tuple on diagonal
+                //Use sets to remove duplicates
+                set<string> vec1 = allIter[p][i];
+                set<string> vec2 = allIter[allIter.size()-p-1][p+i+1];
+                for (const auto& s : vec1){
+                    for (const auto& s2 : vec2){
                         string m = s + " " + s2;
-                        for (auto production : productions){
-                            for (auto rs : production.second){
+                        for (const auto& production : productions){
+                            for (const auto& rs : production.second){
                                 if (m == rs){
+                                    //If combination of elements from vec1 and vec2 is a production
+                                    //Variable belongs in new tuple
                                     newEntry.insert(production.first);
                                     break;
                                 }
@@ -153,39 +161,22 @@ bool CFG::accepts(const string& input) {
                         }
                     }
                 }
-                nextIter.push_back(newEntry);
             }
-            else{
-                for (int p = 0; p < allIter.size(); p++){
-                    set<string> vec1 = allIter[p][i];
-                    set<string> vec2 = allIter[allIter.size()-p-1][p+i+1];
-                    for (auto s : vec1){
-                        for (auto s2 : vec2){
-                            string m = s + " " + s2;
-                            for (auto production : productions){
-                                for (auto rs : production.second){
-                                    if (m == rs){
-                                        newEntry.insert(production.first);
-                                        break;
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-                nextIter.push_back(newEntry);
-            }
+            nextIter.push_back(newEntry);
         }
         allIter.push_back(nextIter);
         n--;
     }
     bool result = false;
+    //If starting variable is in top tuple => input is accepted
     for (const auto& i : allIter.back()[0]){
         if (i == this->startingVariable){
             result = true;
             break;
         }
     }
+    //Code to print pyramid
+    //Colums must appear under each other => calculate width of columns
     vector<int> columnsizes(input.size(), 0);
     for (int i = 0; i < allIter.size(); i++){
         for (int j= 0; j < allIter[i].size(); j++){
@@ -194,11 +185,13 @@ bool CFG::accepts(const string& input) {
             }
         }
     }
+    //Code to print pyramid row by row
     for (int i = allIter.size()-1; i >= 0 ; i--){
         for (int j = 0; j < allIter[i].size(); j++){
             string column;
             vector<string> vset;
-            for (auto s : allIter[i][j]){
+            //Convert set back to vector for easy access
+            for (const auto& s : allIter[i][j]){
                 vset.push_back(s);
             }
             if (vset.empty()){
