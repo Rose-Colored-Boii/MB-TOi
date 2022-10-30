@@ -23,10 +23,21 @@ private:
     string startingVariable;
     void elimNull();
 public:
+    CFG() = default;
     CFG(const string& filename);
     void print() const;
     void toCNF();
     bool accepts(const string& input);
+
+    void setVariables(const vector<string> &variables);
+
+    void setTerminals(const vector<string> &terminals);
+
+    void setProductions(const map<string, vector<string>> &productions);
+
+    void setStartingVariable(const string &startingVariable);
+
+    void ll();
 };
 
 

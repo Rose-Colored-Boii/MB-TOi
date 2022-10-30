@@ -232,3 +232,171 @@ bool CFG::accepts(const string& input) {
     cout << boolalpha << result << endl;
     return result;
 }
+
+void CFG::setVariables(const vector<string> &variables) {
+    CFG::variables = variables;
+}
+
+void CFG::setTerminals(const vector<string> &terminals) {
+    CFG::terminals = terminals;
+}
+
+void CFG::setProductions(const map<string, vector<string>> &productions) {
+    CFG::productions = productions;
+}
+
+void CFG::setStartingVariable(const string &startingVariable) {
+    CFG::startingVariable = startingVariable;
+}
+
+void CFG::ll() {
+    cout << ">>> Building LL(1) Table" << endl;
+    cout << ">> FIRST:" << endl;
+    map<string, set<string>> first;
+    map<string, set<string>> follow;
+    for (const auto& i : variables) {
+        if (i == startingVariable) {
+            follow[i].insert("<EOS>");
+        }
+        for (const auto &j: productions) {
+            if (j.first == i) {
+                for (const auto &k: j.second) {
+                    if (k.empty()) {
+                        first[i].insert("");
+                    }
+                }
+            }
+        }
+        bool changed = true;
+        while (changed){
+            changed = false;
+            for (const auto &j: productions) {
+                if (j.first == i){
+                    for (const auto &k: j.second) {
+                        bool addEps = true;
+                        for (int n = 0; n < k.size(); n++) {
+                            bool isTerminal = false;
+                            if (k[n] == ' ') {
+                                continue;
+                            }
+                            string var;
+                            while (k[n] != ' ' and n < k.size()) {
+                                var += k[n];
+                                n++;
+                            }
+                            for (const auto& t : terminals){
+                                if (var == t){
+                                    isTerminal = true;
+                                    break;
+                                }
+                            }
+                            bool eps = false;
+                            for (const auto &t: first[var]) {
+                                if (t.empty() and !isTerminal) {
+                                    eps = true;
+                                }
+                            }
+                            if (!eps) {
+                                addEps = false;
+                            }
+                            if (n >= k.size() - 1 and addEps and !isTerminal) {
+                                first[j.first].insert("");
+                                changed = true;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        changed = true;
+        while (changed){
+            changed = false;
+            for (const auto &j: productions) {
+                if (j.first == i){
+                    for (const auto &k: j.second) {
+                        bool foundEps = false;
+                        for (int n = 0; n < k.size(); n++) {
+                            bool isTerminal = false;
+                            if (k[n] == ' ') {
+                                continue;
+                            }
+                            string var;
+                            while (k[n] != ' ' and n < k.size()) {
+                                var += k[n];
+                                n++;
+                            }
+                            for (const auto& t : terminals){
+                                if (var == t){
+                                    isTerminal = true;
+                                    break;
+                                }
+                            }
+                            if (isTerminal){
+                                first[j.first].insert(var);
+                                break;
+                            }
+                            for (const auto& t : first[var]){
+                                if (t.empty()){
+                                    foundEps = true;
+                                    for (const auto& m : first[var]){
+                                        if (!m.empty() and !isTerminal){
+                                            first[j.first].insert(m);
+                                            changed = true;
+                                        }
+                                    }
+                                }
+                            }
+                            if (!foundEps){
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    for (const auto& i : productions){
+        for (const auto& j : i.second){
+            for (int k = 0; k < j.size(); k++){
+                string var;
+                while (j[k] != ' ' and k < j.size()){
+                    var += j[k];
+                    k++;
+                }
+                for (int t = k + 1; t < j.size(); t++){
+                    string var2;
+                    while (j[t] != ' ' and t < j.size()){
+                        var2 += j[t];
+                        t++;
+                    }
+                    for (const auto& temp : first[var2]){
+                        if (temp.empty()){
+                            continue;
+                        }
+                        follow[var].insert(temp);
+                    }
+                }
+            }
+        }
+    }
+    bool changed = true;
+    while (changed){
+        changed = false;
+        for (const auto& i : productions){
+            for (const auto& j : i.second){
+                for (int k = 0; k < j.size(); k++){
+                    string var;
+                    while (j[k] != ' ' and k < j.size()){
+                        var += j[k];
+                        k++;
+                    }
+                    if (k >= j.size()){
+                        for (const auto& temp : follow[i.first]){
+                            follow[var].insert(temp);
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
