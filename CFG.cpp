@@ -78,6 +78,16 @@ void CFG::elimNull(){
             }
         }
     }
+    for (const auto& i : this->productions){
+        bool isNullable = false;
+        for (const auto& j : i.second){
+            for (const auto & k : j){
+                for (const auto& l : nullables){
+
+                }
+            }
+        }
+    }
     for (const auto& i : nullables){
         cout << i;
         if (i != nullables.back()){
@@ -316,7 +326,6 @@ void CFG::ll() {
                     for (const auto &k: j.second) {
                         bool foundEps = false;
                         for (int n = 0; n < k.size(); n++) {
-                            bool isTerminal = false;
                             if (k[n] == ' ') {
                                 continue;
                             }
@@ -325,10 +334,10 @@ void CFG::ll() {
                                 var += k[n];
                                 n++;
                             }
-                            for (const auto& t : terminals){
-                                if (var == t){
+                            bool isTerminal = false;
+                            for (const auto& temp : terminals){
+                                if (var == temp){
                                     isTerminal = true;
-                                    break;
                                 }
                             }
                             if (isTerminal){
@@ -339,7 +348,7 @@ void CFG::ll() {
                                 if (t.empty()){
                                     foundEps = true;
                                     for (const auto& m : first[var]){
-                                        if (!m.empty() and !isTerminal){
+                                        if (!m.empty()){
                                             first[j.first].insert(m);
                                             changed = true;
                                         }
@@ -363,11 +372,26 @@ void CFG::ll() {
                     var += j[k];
                     k++;
                 }
+                bool isTerminal = false;
+                for (const auto& temp : terminals){
+                    if (var == temp){
+                        isTerminal = true;
+                    }
+                }
+                if (isTerminal){
+                    continue;
+                }
                 for (int t = k + 1; t < j.size(); t++){
                     string var2;
                     while (j[t] != ' ' and t < j.size()){
                         var2 += j[t];
                         t++;
+                    }
+                    for (const auto& temp : terminals){
+                        if (temp == var2){
+                            follow[var].insert(temp);
+                            break;
+                        }
                     }
                     for (const auto& temp : first[var2]){
                         if (temp.empty()){
@@ -390,13 +414,66 @@ void CFG::ll() {
                         var += j[k];
                         k++;
                     }
+                    bool isTerminal = false;
+                    for (const auto& temp : terminals){
+                        if (var == temp){
+                            isTerminal = true;
+                        }
+                    }
+                    if (isTerminal){
+                        continue;
+                    }
                     if (k >= j.size()){
                         for (const auto& temp : follow[i.first]){
-                            follow[var].insert(temp);
+                            bool inSet = false;
+                            for (const auto& item : follow[var]){
+                                if (item == temp){
+                                    inSet = true;
+                                }
+                            }
+                            if (!inSet){
+                                follow[var].insert(temp);
+                                changed = true;
+                            }
+                        }
+                    }
+                    for (int temp = k++; temp < j.size(); temp++){
+                        bool containseps = false;
+                        string var2;
+                        while (j[k] != ' ' and k < j.size()){
+                            var2 += j[k];
+                            k++;
+                        }
+                        for (const auto& t : first[var2]){
+                            if (t.empty()){
+                                containseps = true;
+                                break;
+                            }
+                        }
+                        if (!containseps){
+                            break;
+                        }
+                        if (k >= j.size()){
+                            for (const auto& t : follow[i.first]){
+                                if (t.empty()){
+                                    continue;
+                                }
+                                bool inSet = false;
+                                for (const auto& item : follow[var]){
+                                    if (item == t){
+                                        inSet = true;
+                                    }
+                                }
+                                if (!inSet){
+                                    follow[var].insert(t);
+                                    changed = true;
+                                }
+                            }
                         }
                     }
                 }
             }
         }
     }
+    map<string, vector<string>> table;
 }
